@@ -21,7 +21,7 @@ export const run = async () => {
 
   if (!strictFilePaths.length) {
     console.log(chalk.red(noStrictFilesError));
-    process.exit(1);
+    if (!pluginConfig.passOnEmpty) process.exit(1);
     return;
   }
 
