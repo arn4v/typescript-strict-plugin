@@ -9,6 +9,24 @@ export const showConfig = async (): Promise<string> => {
   return output.stdout;
 };
 
+export async function getFilesBeingChecked(): Promise<string[]> {
+  try {
+    const result = await execa('tsc', [...process.argv.slice(2), '--listFilesOnly'], {
+      all: true,
+      preferLocal: true,
+    });
+    return result.stdout.split(/\r?\n/);
+  } catch (error) {
+    if (isExecaError(error) && error.all) {
+      if (wasCompileAborted(error)) {
+        console.log(`💥 Typescript task was aborted. Full error log: `, error.all);
+        process.exit(error.exitCode);
+      }
+    }
+  }
+  return [];
+}
+
 let compilerOutputCache = '';
 export const compile = async (): Promise<string> => {
   if (compilerOutputCache) {
