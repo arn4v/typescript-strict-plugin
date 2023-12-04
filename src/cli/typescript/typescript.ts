@@ -1,7 +1,7 @@
 import execa, { ExecaError } from 'execa';
 
 export const showConfig = async (): Promise<string> => {
-  const output = await execa('tsc', ['--showConfig'], {
+  const output = await execa('tsc', [...process.argv.slice(2), '--showConfig'], {
     all: true,
     preferLocal: true,
   });
@@ -28,6 +28,11 @@ export const compile = async (): Promise<string> => {
     compilerOutputCache = compilerResult.stdout;
   } catch (error) {
     if (isExecaError(error) && error.all) {
+      if (wasCompileAborted(error)) {
+        console.log(`💥 Typescript task was aborted. Full error log: `, error.all);
+        process.exit(error.exitCode);
+      }
+
       compilerOutputCache = error.all;
     }
   }
@@ -37,4 +42,8 @@ export const compile = async (): Promise<string> => {
 
 function isExecaError(error: unknown): error is ExecaError {
   return typeof (error as ExecaError)?.all === 'string';
+}
+
+function wasCompileAborted(error: ExecaError): boolean {
+  return error.signal === 'SIGABRT' || error.exitCode === 134;
 }

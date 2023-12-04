@@ -15,7 +15,7 @@ describe('isFileStrict', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    isFileOnPathMock.mockImplementation((_, path) => path === filePath);
+    isFileOnPathMock.mockImplementation(({ targetPath }) => targetPath === filePath);
     isCommentPresent.mockReturnValue(false);
   });
 
@@ -36,6 +36,20 @@ describe('isFileStrict', () => {
 
     // when
     const result = isFileStrict({ filePath, isCommentPresent });
+
+    // then
+    expect(result).toBe(true);
+  });
+
+  it('should return true when strict comment is present and file is excluded', () => {
+    // given
+    isCommentPresent.mockImplementation((comment) => comment === '@ts-strict');
+    const config: Config = {
+      exclude: [filePath],
+    };
+
+    // when
+    const result = isFileStrict({ filePath, isCommentPresent, config });
 
     // then
     expect(result).toBe(true);
@@ -110,10 +124,52 @@ describe('isFileStrict', () => {
     expect(result).toBe(false);
   });
 
+  it('should return false when file is on path and in exclude', () => {
+    // given
+    const config: Config = {
+      paths: ['otherFilePath', filePath, 'otherFilePath'],
+      exclude: [filePath],
+    };
+
+    // when
+    const result = isFileStrict({ filePath, isCommentPresent, config });
+
+    // then
+    expect(result).toBe(false);
+  });
+
   it('should return true when path config is empty', () => {
     // given
     const config: Config = {
       paths: [],
+    };
+
+    // when
+    const result = isFileStrict({ filePath, isCommentPresent, config });
+
+    // then
+    expect(result).toBe(true);
+  });
+
+  it('should return false when path config is empty and file is excluded', () => {
+    // given
+    const config: Config = {
+      paths: [],
+      exclude: [filePath],
+    };
+
+    // when
+    const result = isFileStrict({ filePath, isCommentPresent, config });
+
+    // then
+    expect(result).toBe(false);
+  });
+
+  it('should return true when path config is empty and different file is excluded (check for false-positive)', () => {
+    // given
+    const config: Config = {
+      paths: [],
+      exclude: ['otherFile'],
     };
 
     // when
