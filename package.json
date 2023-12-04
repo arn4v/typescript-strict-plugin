@@ -1,6 +1,6 @@
 {
-  "name": "typescript-strict-plugin",
-  "version": "2.2.1",
+  "name": "@arn4v/typescript-strict-plugin",
+  "version": "2.3.2",
   "description": "Typescript tools that help with migration to the strict mode",
   "author": "Allegro",
   "contributors": [
@@ -35,7 +35,9 @@
     "prettier": "prettier --loglevel error --write .",
     "prettier:ci": "prettier --check .",
     "build": "tsc",
-    "dev": "tsc --watch -p ."
+    "dev": "tsc --watch -p .",
+    "prepublish": "npm run build",
+    "prepare": "npm run build"
   },
   "jest": {
     "preset": "ts-jest",
